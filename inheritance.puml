@@ -1,0 +1,25 @@
+@startuml
+
+
+class main
+class play_game
+class algorithms
+class alphaBeta
+class miniMax
+class monteCarlo
+class operators
+class Game
+
+
+main <|-- play_game
+play_game <|-- algorithms
+play_game <|-- operators
+algorithms <|-- alphaBeta
+algorithms <|-- miniMax
+algorithms <|-- monteCarlo
+miniMax <|-- operators
+alphaBeta <|-- operators
+monteCarlo <|-- operators
+operators <|-- Game
+
+@enduml
