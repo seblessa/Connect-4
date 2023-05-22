@@ -1,7 +1,5 @@
 # Sumário
 
---- 
-
 Aplicação python da nossa implementação do jogo 4 em linha.
 Modos de jogo disponíveis:
 - Player vs Player
@@ -16,8 +14,6 @@ Modos de jogo disponíveis:
 
 
 # Versões
-
----
 
 As versoes dos sistemas operativos usados para desenvolver e testar esta aplicação são:
 - Fedora 37
@@ -35,8 +31,6 @@ A versões do python testadas são:
 
 
 # Execução
-
----
 
 - Para correr o jogo no modo `player vs player` é necessario executar:
 
