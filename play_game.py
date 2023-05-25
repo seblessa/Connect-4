@@ -177,9 +177,9 @@ def player_vs_algorithm(game):
         elif event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
             column = pos[0] // SQUARE_SIZE
-            game.move(column)
-            if not game.game_over():
-                game.move(algorithms.move(game, game.get_algorithm1()))
+            if game.move(column):
+                if not game.game_over():
+                    game.move(algorithms.move(game, game.get_algorithm1()))
 
         pygame.display.update()
 
