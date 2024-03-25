@@ -5,86 +5,35 @@ import copy
 class Game:
     def __init__(self, board, algorithm=None, turn="O", score=0, played_moves=0,
                  winnings_coords=None, last_move=None, algorithm1=None, algorithm2=None):
-        self.__board = board
-        self.__algorithm = algorithm
-        self.__winner = None
-        self.__turn = turn
-        self.__score = score
-        self.__played_moves = played_moves
-        self.__winnings_coords = winnings_coords
-        self.__last_move = last_move
-        self.__game_over = False
-        self.__algorithm1 = algorithm1
-        self.__algorithm2 = algorithm2
-
-    def get_algorithm1(self):
-        return self.__algorithm1
-
-    def get_algorithm2(self):
-        return self.__algorithm2
-
-    def set_algorithm1(self, algorithm):
-        self.__algorithm1 = algorithm
-
-    def set_algorithm2(self, algorithm):
-        self.__algorithm2 = algorithm
-
-    def get_last_move(self):
-        return self.__last_move
-
-    def get_played_moves(self):
-        return self.__played_moves
-
-    def increment_played_moves(self):
-        self.__played_moves += 1
-
-    def get_winning_coords(self):
-        return self.__winnings_coords
-
-    def get_board(self):
-        return self.__board
-
-    def get_board_element(self, x, y):
-        return self.__board[x][y]
-
-    def set_board_element(self, x, y, value):
-        self.__board[x][y] = value
-
-    def get_turn(self):
-        return self.__turn
-
-    def switch_turn(self):
-        if self.__turn == "O":
-            self.__turn = "X"
-        else:
-            self.__turn = "O"
-
-    def get_winner(self):
-        return self.__winner
-
-    def set_winner(self, winner):
-        self.__winner = winner
-
-    def set_last_move(self, column):
-        self.__last_move = column
+        self.board = board
+        self.algorithm = algorithm
+        self.winner = None
+        self.turn = turn
+        self.score = score
+        self.played_moves = played_moves
+        self.winnings_coords = winnings_coords
+        self.last_move = last_move
+        self.game_over = False
+        self.algorithm1 = algorithm1
+        self.algorithm2 = algorithm2
 
     def clear_board_except_winning_pieces(self):
-        if self.__winnings_coords:
+        if self.winnings_coords:
             for i in range(6):
                 for j in range(7):
-                    if (i, j) not in self.__winnings_coords:
-                        if self.get_board_element(i, j) == "O":
-                            self.set_board_element(i, j, "o")
-                        elif self.get_board_element(i, j) == "X":
-                            self.set_board_element(i, j, "x")
+                    if (i, j) not in self.winnings_coords:
+                        if self.board[i][j] == "O":
+                            self.board[i][j] = "o"
+                        elif self.board[i][j] == "X":
+                            self.board[i][j] = "x"
                         else:
-                            self.set_board_element(i, j, "-")
+                            self.board[i][j] = "-"
 
     def get_score(self):
         def evaluate_segment(segm):
-            if self.__winner == "X":
+            if self.winner == "X":
                 return 512
-            elif self.__winner == "O":
+            elif self.winner == "O":
                 return -512
 
             elif "O" in segm and "X" not in segm:
@@ -106,33 +55,33 @@ class Game:
             return 0
 
         # Evaluate all possible straight segments
-        self.__score = 0
+        self.score = 0
         for i in range(6):
             for j in range(4):
                 if j + 3 < 7:  # check if the indices are within range
-                    segment = [self.get_board_element(i, j + k) for k in range(4)]
-                    self.__score += evaluate_segment(segment)
+                    segment = [self.board[i][j + k] for k in range(4)]
+                    self.score += evaluate_segment(segment)
         for i in range(4):
             for j in range(7):
                 if i + 3 < 6:  # check if the indices are within range
-                    segment = [self.get_board_element(i + k, j) for k in range(4)]
-                    self.__score += evaluate_segment(segment)
+                    segment = [self.board[i + k][j] for k in range(4)]
+                    self.score += evaluate_segment(segment)
         for i in range(3):
             for j in range(4):
                 if i + 3 < 6 and j + 3 < 7:  # check if the indices are within range
-                    segment = [self.get_board_element(i + k, j + k) for k in range(4)]
-                    self.__score += evaluate_segment(segment)
+                    segment = [self.board[i + k][j + k] for k in range(4)]
+                    self.score += evaluate_segment(segment)
         for i in range(3):
             for j in range(3, 7):
                 if i + 3 < 6 and j - 3 >= 0:  # check if the indices are within range
-                    segment = [self.get_board_element(i + k, j - k) for k in range(4)]
-                    self.__score += evaluate_segment(segment)
+                    segment = [self.board[i + k][j - k] for k in range(4)]
+                    self.score += evaluate_segment(segment)
 
-        return self.__score
+        return self.score
 
     def full_column(self, column):
         for i in range(6):
-            if self.get_board_element(i, column) == "-":
+            if self.board[i][column] == "-":
                 return False
         return True
 
@@ -141,66 +90,69 @@ class Game:
             return False
 
         for i in range(5, -1, -1):
-            if self.get_board_element(i, column) == "-":
-                self.set_board_element(i, column, self.get_turn())
-                self.increment_played_moves()
-                self.switch_turn()
-                self.set_last_move(column)
+            if self.board[i][column] == "-":
+                self.board[i][column] = self.turn
+                self.played_moves += 1
+
+                self.turn = "X" if self.turn == "O" else "O"
+
+                self.last_move = column
                 return True
 
     def game_over(self, clear_board=False):
-        if self.__game_over:
+        if self.game_over:
             return True
         # Check horizontal
         for i in range(6):
             for j in range(4):
-                if self.get_board_element(i, j) == self.get_board_element(i, j + 1) == self.get_board_element(i, j + 2) == self.get_board_element(i, j + 3) != "-":
-                    self.set_winner(self.get_board_element(i, j))
-                    self.__winnings_coords = [(i, j), (i, j + 1), (i, j + 2), (i, j + 3)]
+                if self.board[i][j] == self.board[i][j + 1] == self.board[i][j + 2] == self.board[i][j + 3] != "-":
+                    self.winner = self.board[i][j]
+                    self.winnings_coords = [(i, j), (i, j + 1), (i, j + 2), (i, j + 3)]
                     if clear_board:
                         self.clear_board_except_winning_pieces()
-                    self.__game_over = True
+                    self.game_over = True
                     return True
         # Check vertical
         for i in range(3):
             for j in range(7):
-                if self.get_board_element(i, j) == self.get_board_element(i + 1, j) == self.get_board_element(i + 2, j) == self.get_board_element(i + 3, j) != "-":
-                    self.set_winner(self.get_board_element(i, j))
-                    self.__winnings_coords = [(i, j), (i + 1, j), (i + 2, j), (i + 3, j)]
+                if self.board[i][j] == self.board[i + 1][j] == self.board[i + 2][j] == self.board[i + 3][j] != "-":
+                    self.winner = self.board[i][j]
+                    self.winnings_coords = [(i, j), (i + 1, j), (i + 2, j), (i + 3, j)]
                     if clear_board:
                         self.clear_board_except_winning_pieces()
-                    self.__game_over = True
+                    self.game_over = True
                     return True
         # Check diagonal
         for i in range(3):
             for j in range(4):
-                if self.get_board_element(i, j) == self.get_board_element(i + 1, j + 1) == self.get_board_element(i + 2, j + 2) == self.get_board_element(i + 3, j + 3) != "-":
-                    self.set_winner(self.get_board_element(i, j))
-                    self.__winnings_coords = [(i, j), (i + 1, j + 1), (i + 2, j + 2), (i + 3, j + 3)]
+                if self.board[i][j] == self.board[i + 1][j + 1] == self.board[i + 2][j + 2] == self.board[i + 3][
+                    j + 3] != "-":
+                    self.winner = self.board[i][j]
+                    self.winnings_coords = [(i, j), (i + 1, j + 1), (i + 2, j + 2), (i + 3, j + 3)]
                     if clear_board:
                         self.clear_board_except_winning_pieces()
-                    self.__game_over = True
+                    self.game_over = True
                     return True
         # Check anti-diagonal
         for i in range(3, 6):
             for j in range(4):
-                if self.get_board_element(i, j) == self.get_board_element(i - 1, j + 1) == self.get_board_element(i - 2, j + 2) == self.get_board_element(i - 3, j + 3) != "-":
-                    self.set_winner(self.get_board_element(i, j))
-                    self.__winnings_coords = [(i, j), (i - 1, j + 1), (i - 2, j + 2), (i - 3, j + 3)]
+                if self.board[i][j] == self.board[i - 1][j + 1] == self.board[i - 2][j + 2] == self.board[i - 3][j + 3] != "-":
+                    self.winner = self.board[i][j]
+                    self.winnings_coords = [(i, j), (i - 1, j + 1), (i - 2, j + 2), (i - 3, j + 3)]
                     if clear_board:
                         self.clear_board_except_winning_pieces()
-                    self.__game_over = True
+                    self.game_over = True
                     return True
         # Check if the board is full
-        if self.get_played_moves() == 42:
-            self.set_winner("Draw")
-            self.__game_over = True
+        if self.played_moves == 42:
+            self.winner = "Draw"
+            self.game_over = True
             return True
         return False
 
     def __copy__(self):
-        return Game(copy.deepcopy(self.__board), self.__algorithm, self.__turn, self.__score, self.__played_moves,
-                    self.__winnings_coords, self.__last_move, self.__algorithm1, self.__algorithm2)
+        return Game(copy.deepcopy(self.board), self.algorithm, self.turn, self.score, self.played_moves,
+                     self.winnings_coords, self.last_move, self.algorithm1, self.algorithm2)
 
     def __str__(self):
         board_string = ""
@@ -209,7 +161,7 @@ class Game:
             row = ""
             for j in range(7):
                 if i != 6:
-                    row += self.__board[i][j]
+                    row += self.board[i][j]
                 else:
                     row += str(count)
                     count += 1
